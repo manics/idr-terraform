@@ -14,17 +14,12 @@ variable "docker_ansible_vars" {
   default = "-e idr_net_iface=net -e idr_environment=idr -e omero_selinux_setup=False -e idr_nginx_ssl_self_signed=True"
 }
 
-variable "local_parent_repodir" {
-  description = "Path to the parent directory of all required repositories"
-  default = "~/work"
-}
-
 # Run ansible once all containers are running
 resource "null_resource" "ansible" {
   triggers {
     idr_container_ips = "${module.idr-docker.database_ip} ${module.idr-docker.omero_ip} ${module.idr-docker.gateway_ip}"
   }
   provisioner "local-exec" {
-    command = "cd ${var.local_parent_repodir}/infrastructure/ansible && ansible-playbook -i ${var.local_parent_repodir}/idr-terraform/ansible-docker-inventory.py idr-playbooks/idr.yml ${var.docker_ansible_vars}"
+    command = "cd ../ansible && ansible-playbook -i ../terraform/ansible-docker-inventory.py idr-playbooks/idr.yml ${var.docker_ansible_vars}"
   }
 }
