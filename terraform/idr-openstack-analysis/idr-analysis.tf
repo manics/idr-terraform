@@ -12,7 +12,7 @@ variable "vm_keyname" {
 }
 
 variable "omero_vm_flavor" {
-  default = "m2.large"
+  default = "m1.large"
 }
 
 variable "docker_vm_flavor" {
@@ -27,40 +27,34 @@ variable "omero_data_volume_source" {
   description = "UUID of the omero-data volume to be copied"
 }
 
-# Configure the OpenStack Provider
-#provider "openstack" {
-#    user_name  = "admin"
-#    tenant_name = "admin"
-#    password  = "pwd"
-#    auth_url  = "http://myauthurl:5000/v2.0"
-#}
 
-# https://www.terraform.io/docs/providers/openstack/r/compute_instance_v2.html
-
-
-resource "openstack_blockstorage_volume_v2" "database-volume" {
-  name = "${var.idr_environment}-omerosingle-db"
+resource "openstack_blockstorage_volume_v2" "database_volume" {
+  name = "${var.idr_environment}-database-db"
   size = 100
   # TODO: Snapshot or source_vol
   #snapshot_id =
   source_vol_id = "${var.database_db_volume_source}"
 }
 
-resource "openstack_blockstorage_volume_v2" "omero-volume" {
-  name = "${var.idr_environment}-omerosingle-data"
+resource "openstack_blockstorage_volume_v2" "omero_volume" {
+  name = "${var.idr_environment}-omero-data"
   size = 500
   # TODO: Snapshot or source_vol
   #snapshot_id =
   source_vol_id = "${var.omero_data_volume_source}"
 }
 
-resource "openstack_compute_floatingip_v2" "omerosingle-ip" {
+
+resource "openstack_compute_floatingip_v2" "omero_ip" {
   pool = "external_network"
 }
 
-# Combined OMERO.server and Database VM
-resource "openstack_compute_instance_v2" "omerosingle" {
-  name = "${var.idr_environment}-omerosingle"
+
+# There's a bug(?) which means multiple volumes may be attached in the wrong
+# order, so for now create two VMs instead of combining database and omero
+
+resource "openstack_compute_instance_v2" "database" {
+  name = "${var.idr_environment}-database"
   image_name = "${var.vm_image}"
   flavor_name = "${var.omero_vm_flavor}"
   key_pair = "${var.vm_keyname}"
@@ -70,9 +64,31 @@ resource "openstack_compute_instance_v2" "omerosingle" {
 
   metadata {
     # Ansible groups
-    groups = "${var.idr_environment}-database-hosts,database-hosts,${var.idr_environment}-omero-hosts,omero-hosts,${var.idr_environment}-hosts"
+    groups = "${var.idr_environment}-database-hosts,database-hosts,${var.idr_environment}-hosts"
     # Is hostname needed by Ansible?
-    hostname = "${var.idr_environment}-omerosingle"
+    hostname = "${var.idr_environment}-database"
+  }
+
+  volume {
+    volume_id = "${openstack_blockstorage_volume_v2.database_volume.id}"
+  }
+}
+
+
+resource "openstack_compute_instance_v2" "omero" {
+  name = "${var.idr_environment}-omero"
+  image_name = "${var.vm_image}"
+  flavor_name = "${var.omero_vm_flavor}"
+  key_pair = "${var.vm_keyname}"
+  security_groups = ["default"]
+
+  stop_before_destroy = true
+
+  metadata {
+    # Ansible groups
+    groups = "${var.idr_environment}-omero-hosts,omero-hosts,${var.idr_environment}-hosts"
+    # Is hostname needed by Ansible?
+    hostname = "${var.idr_environment}-omero"
   }
 
 #  network {
@@ -80,27 +96,18 @@ resource "openstack_compute_instance_v2" "omerosingle" {
 #    access_network = true
 #  }
 
-  floating_ip = "${openstack_compute_floatingip_v2.omerosingle-ip.address}"
+  floating_ip = "${openstack_compute_floatingip_v2.omero_ip.address}"
 
-# Setting `device` seems to break something, so instead just hope the volumes
-# are assigned in order
   volume {
-    volume_id = "${openstack_blockstorage_volume_v2.database-volume.id}"
-    #device = "/dev/vdb"
+    volume_id = "${openstack_blockstorage_volume_v2.omero_volume.id}"
   }
-  volume {
-    volume_id = "${openstack_blockstorage_volume_v2.omero-volume.id}"
-    #device = "/dev/vdc"
-  }
-
-
-#  connection {
-#    user = "centos"
-#    key_file = ""
-#    host = "${self.access_ip_v4}"
-#  }
 }
 
+
 output "list_of_ips" {
-  value = "${openstack_compute_instance_v2.omerosingle.access_ip_v4}"
+  value = "${openstack_compute_instance_v2.database.access_ip_v4} ${openstack_compute_instance_v2.omero.access_ip_v4}"
+}
+
+output "floating_ip" {
+  value = "${openstack_compute_floatingip_v2.omero_ip.address}"
 }

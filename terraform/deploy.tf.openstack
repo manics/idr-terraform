@@ -10,10 +10,12 @@ module "idr" {
 # omero user 52 to `public`
 module "idr-ansible" {
   source = "./idr-ansible"
-  ansible_vars = "-u centos -e idr_environment=analysis -e idr_nginx_ssl_self_signed=True -e omero_data_vol_dev=/dev/vdc -e omero_public_userid=52 -e omero_public_hash='yypDVLMt42syD+8x2ugFUQ=='"
+  ansible_vars = "-u centos -e idr_environment=analysis -e idr_nginx_ssl_self_signed=True -e omero_public_userid=52 -e omero_public_hash='yypDVLMt42syD+8x2ugFUQ=='"
   ansible_workdir = "../ansible"
-  ansible_inventory = "inventory/openstack.py"
+  #ansible_inventory = "inventory/openstack.py"
+  ansible_inventory = "inventory/openstack-private.py"
   #ansible_playbooks = "idr-playbooks/os-idr-volumes.yml idr-playbooks/idr.yml"
   ansible_playbooks = "idr-playbooks/os-idr-volumes.yml idr-playbooks/idr.yml idr-playbooks/utils-reset-public-password.yml"
+  ansible_ssh = "'-o ProxyCommand=\\\"ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -W %h:%p -q centos@${module.idr.floating_ip}\\\" -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'"
   wait_for = "${module.idr.list_of_ips}"
 }

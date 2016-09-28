@@ -20,12 +20,17 @@ variable "ansible_playbooks" {
   description = "Ansible playbook(s)"
 }
 
+variable "ansible_ssh" {
+  description = "Ansible ssh arguments"
+  default = ""
+}
+
 # Run ansible once all containers are running
 resource "null_resource" "ansible" {
   triggers {
     wait_for = "${var.wait_for}"
   }
   provisioner "local-exec" {
-    command = "cd ${var.ansible_workdir} && ansible-playbook -i ${var.ansible_inventory} ${var.ansible_vars} ${var.ansible_playbooks}"
+    command = "cd ${var.ansible_workdir} && ansible-playbook -i ${var.ansible_inventory} -e ansible_ssh_common_args=\"${var.ansible_ssh}\" ${var.ansible_vars} ${var.ansible_playbooks}"
   }
 }
