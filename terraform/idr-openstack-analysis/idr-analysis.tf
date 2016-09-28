@@ -104,8 +104,7 @@ resource "openstack_compute_instance_v2" "omero" {
 }
 
 
-
-resource "openstack_compute_instance_v2" "docker" {
+resource "openstack_compute_instance_v2" "dockermanager" {
   name = "${var.idr_environment}-docker"
   image_name = "${var.vm_image}"
   flavor_name = "${var.docker_vm_flavor}"
@@ -116,7 +115,7 @@ resource "openstack_compute_instance_v2" "docker" {
 
   metadata {
     # Ansible groups
-    groups = "${var.idr_environment}-docker-hosts,docker-hosts,${var.idr_environment}-hosts"
+    groups = "${var.idr_environment}-dockermanager-hosts,dockermanager-hosts,${var.idr_environment}-hosts"
     # Is hostname needed by Ansible?
     hostname = "${var.idr_environment}-docker"
   }
@@ -125,8 +124,27 @@ resource "openstack_compute_instance_v2" "docker" {
 }
 
 
+resource "openstack_compute_instance_v2" "dockerworker" {
+  name = "${var.idr_environment}-dockerworker"
+  image_name = "${var.vm_image}"
+  flavor_name = "${var.docker_vm_flavor}"
+  key_pair = "${var.vm_keyname}"
+  security_groups = ["default"]
+  count = 1
+
+  #stop_before_destroy = true
+
+  metadata {
+    # Ansible groups
+    groups = "${var.idr_environment}-dockerworker-hosts,dockerworker-hosts,${var.idr_environment}-hosts"
+    # Is hostname needed by Ansible?
+    hostname = "${var.idr_environment}-dockerworker"
+  }
+}
+
+
 output "list_of_ips" {
-  value = "${openstack_compute_instance_v2.database.access_ip_v4} ${openstack_compute_instance_v2.omero.access_ip_v4} ${openstack_compute_instance_v2.docker.access_ip_v4}"
+  value = "${openstack_compute_instance_v2.database.access_ip_v4} ${openstack_compute_instance_v2.omero.access_ip_v4} ${openstack_compute_instance_v2.dockermanager.access_ip_v4} ${openstack_compute_instance_v2.dockerworker.access_ip_v4}"
 }
 
 output "floating_ip" {
