@@ -11,7 +11,7 @@ variable "vm_keyname" {
   description = "SSH key"
 }
 
-variable "omero_vm_flavor" {
+variable "vm_flavor" {
   default = "m1.large"
 }
 
@@ -45,7 +45,7 @@ resource "openstack_blockstorage_volume_v2" "omero_volume" {
 }
 
 
-resource "openstack_compute_floatingip_v2" "omero_ip" {
+resource "openstack_compute_floatingip_v2" "floating_ip" {
   pool = "external_network"
 }
 
@@ -56,7 +56,7 @@ resource "openstack_compute_floatingip_v2" "omero_ip" {
 resource "openstack_compute_instance_v2" "database" {
   name = "${var.idr_environment}-database"
   image_name = "${var.vm_image}"
-  flavor_name = "${var.omero_vm_flavor}"
+  flavor_name = "${var.vm_flavor}"
   key_pair = "${var.vm_keyname}"
   security_groups = ["default"]
 
@@ -78,7 +78,7 @@ resource "openstack_compute_instance_v2" "database" {
 resource "openstack_compute_instance_v2" "omero" {
   name = "${var.idr_environment}-omero"
   image_name = "${var.vm_image}"
-  flavor_name = "${var.omero_vm_flavor}"
+  flavor_name = "${var.vm_flavor}"
   key_pair = "${var.vm_keyname}"
   security_groups = ["default"]
 
@@ -96,7 +96,7 @@ resource "openstack_compute_instance_v2" "omero" {
 #    access_network = true
 #  }
 
-  floating_ip = "${openstack_compute_floatingip_v2.omero_ip.address}"
+#  floating_ip = "${openstack_compute_floatingip_v2.floating_ip.address}"
 
   volume {
     volume_id = "${openstack_blockstorage_volume_v2.omero_volume.id}"
@@ -104,10 +104,31 @@ resource "openstack_compute_instance_v2" "omero" {
 }
 
 
+
+resource "openstack_compute_instance_v2" "docker" {
+  name = "${var.idr_environment}-docker"
+  image_name = "${var.vm_image}"
+  flavor_name = "${var.docker_vm_flavor}"
+  key_pair = "${var.vm_keyname}"
+  security_groups = ["default"]
+
+  stop_before_destroy = true
+
+  metadata {
+    # Ansible groups
+    groups = "${var.idr_environment}-docker-hosts,docker-hosts,${var.idr_environment}-hosts"
+    # Is hostname needed by Ansible?
+    hostname = "${var.idr_environment}-docker"
+  }
+
+  floating_ip = "${openstack_compute_floatingip_v2.floating_ip.address}"
+}
+
+
 output "list_of_ips" {
-  value = "${openstack_compute_instance_v2.database.access_ip_v4} ${openstack_compute_instance_v2.omero.access_ip_v4}"
+  value = "${openstack_compute_instance_v2.database.access_ip_v4} ${openstack_compute_instance_v2.omero.access_ip_v4} ${openstack_compute_instance_v2.docker.access_ip_v4}"
 }
 
 output "floating_ip" {
-  value = "${openstack_compute_floatingip_v2.omero_ip.address}"
+  value = "${openstack_compute_floatingip_v2.floating_ip.address}"
 }
