@@ -56,7 +56,7 @@ resource "openstack_compute_instance_v2" "omero" {
 
 
 resource "openstack_compute_instance_v2" "dockermanager" {
-  name = "${var.idr_environment}-docker"
+  name = "${var.idr_environment}-dockermanager"
   image_name = "${var.vm_image}"
   flavor_name = "${var.docker_vm_flavor}"
   key_pair = "${var.vm_keyname}"
@@ -66,7 +66,7 @@ resource "openstack_compute_instance_v2" "dockermanager" {
 
   metadata {
     # Ansible groups
-    groups = "${var.idr_environment}-dockermanager-hosts,dockermanager-hosts,${var.idr_environment}-hosts"
+    groups = "${var.idr_environment}-dockermanager-hosts,dockermanager-hosts,${var.idr_environment}-hosts,${var.idr_environment}-data-hosts"
   }
 
   floating_ip = "${openstack_compute_floatingip_v2.floating_ip.address}"
