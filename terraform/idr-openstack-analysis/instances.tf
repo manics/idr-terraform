@@ -66,7 +66,7 @@ resource "openstack_compute_instance_v2" "dockermanager" {
 
   metadata {
     # Ansible groups
-    groups = "${var.idr_environment}-dockermanager-hosts,dockermanager-hosts,${var.idr_environment}-hosts,${var.idr_environment}-data-hosts"
+    groups = "${var.idr_environment}-dockermanager-hosts,${var.idr_environment}-docker-hosts,${var.idr_environment}-hosts,${var.idr_environment}-data-hosts"
   }
 
   floating_ip = "${openstack_compute_floatingip_v2.floating_ip.address}"
@@ -89,7 +89,7 @@ resource "openstack_compute_instance_v2" "dockerworker" {
 
   metadata {
     # Ansible groups
-    groups = "${var.idr_environment}-dockerworker-hosts,dockerworker-hosts,${var.idr_environment}-hosts"
+    groups = "${var.idr_environment}-dockerworker-hosts,${var.idr_environment}-docker-hosts,${var.idr_environment}-hosts"
     # Is hostname needed by Ansible?
     hostname = "${var.idr_environment}-dockerworker"
   }
