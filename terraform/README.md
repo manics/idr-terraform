@@ -17,6 +17,17 @@ IDR Terraform
 
     terraform apply -var docker_privileged=True
 
+   This creates a file `terraform.tfstate` in the current directory, which is required for other Terraform commands.
+   Without this file Terraform will recreate everything instead of modifying or removing the existing resources.
+
+To show the current state:
+
+    terraform show
+
 To destroy:
 
     terraform destroy
+
+Taint the ansible resource to force it to be re-run:
+
+    terraform taint -module idr-ansible null_resource.ansible
