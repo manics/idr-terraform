@@ -8,6 +8,11 @@ variable "ansible_vars" {
   default = ""
 }
 
+variable "ansible_vars2" {
+  description = "More Ansible playbook command line variables"
+  default = ""
+}
+
 variable "ansible_workdir" {
   description = "Change to this directory before running Ansible"
 }
@@ -31,6 +36,6 @@ resource "null_resource" "ansible" {
     wait_for = "${var.wait_for}"
   }
   provisioner "local-exec" {
-    command = "cd ${var.ansible_workdir} && ansible-playbook -i ${var.ansible_inventory} -e ansible_ssh_common_args=\"${var.ansible_ssh}\" ${var.ansible_vars} ${var.ansible_playbooks}"
+    command = "cd ${var.ansible_workdir} && ansible-playbook -i ${var.ansible_inventory} -e ansible_ssh_common_args=\"${var.ansible_ssh}\" ${var.ansible_vars} ${var.ansible_vars2} ${var.ansible_playbooks}"
   }
 }
