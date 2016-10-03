@@ -28,8 +28,9 @@ variable "omero_data_volume_source" {
 
 
 output "list_of_ips" {
-  value = "${openstack_compute_instance_v2.database.access_ip_v4} ${openstack_compute_instance_v2.omero.access_ip_v4} ${openstack_compute_instance_v2.dockermanager.access_ip_v4} ${openstack_compute_instance_v2.dockerworker.access_ip_v4}"
+  value = "${openstack_compute_instance_v2.database.access_ip_v4} ${openstack_compute_instance_v2.omero.access_ip_v4} ${openstack_compute_instance_v2.dockermanager.access_ip_v4}"
 }
+#${openstack_compute_instance_v2.dockerworker.access_ip_v4}
 
 output "floating_ip" {
   value = "${openstack_compute_floatingip_v2.floating_ip.address}"

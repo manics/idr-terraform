@@ -76,7 +76,7 @@ resource "openstack_compute_instance_v2" "dockermanager" {
   }
 }
 
-
+/*
 resource "openstack_compute_instance_v2" "dockerworker" {
   name = "${var.idr_environment}-dockerworker"
   image_name = "${var.vm_image}"
@@ -94,3 +94,4 @@ resource "openstack_compute_instance_v2" "dockerworker" {
     hostname = "${var.idr_environment}-dockerworker"
   }
 }
+*/
