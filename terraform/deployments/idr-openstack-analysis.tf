@@ -15,6 +15,7 @@ module "idr" {
 # omero user 52 to `public`
 module "idr-ansible" {
   source = "./idr-ansible"
+  delay = 5
   ansible_vars = "-u centos -e idr_environment=analysis -e idr_nginx_ssl_self_signed=True -e omero_public_userid=52 -e omero_public_hash='yypDVLMt42syD+8x2ugFUQ=='"
   ansible_workdir = "../ansible"
   #ansible_inventory = "inventory/openstack.py"
