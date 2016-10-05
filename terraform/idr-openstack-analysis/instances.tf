@@ -60,7 +60,8 @@ resource "openstack_compute_instance_v2" "dockermanager" {
   image_name = "${var.vm_image}"
   flavor_name = "${var.docker_vm_flavor}"
   key_pair = "${var.vm_keyname}"
-  security_groups = ["default"]
+  # TODO: Tighten this up
+  security_groups = ["default", "all"]
 
   stop_before_destroy = true
 

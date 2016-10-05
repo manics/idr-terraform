@@ -27,7 +27,13 @@ variable "ansible_inventory" {
 }
 
 variable "ansible_playbooks" {
-  description = "Ansible playbook(s)"
+  description = "Ansible playbooks to be run"
+  default = "idr-playbooks/os-idr-volumes.yml idr-playbooks/idr-dundee-nfs.yml  idr-playbooks/idr-ebi-nfs.yml idr-playbooks/idr.yml idr-playbooks/idr-docker.yml"
+}
+
+variable "ansible_additional_playbooks" {
+  description = "Additional Ansible playbooks (convenience variable so the defaults from ansible_playbooks can be used)"
+  default = ""
 }
 
 variable "ansible_ssh" {
@@ -41,6 +47,6 @@ resource "null_resource" "ansible" {
     wait_for = "${var.wait_for}"
   }
   provisioner "local-exec" {
-    command = "sleep ${var.delay} && cd ${var.ansible_workdir} && ansible-playbook -i ${var.ansible_inventory} -e ansible_ssh_common_args=\"${var.ansible_ssh}\" ${var.ansible_vars} ${var.ansible_vars2} ${var.ansible_playbooks}"
+    command = "sleep ${var.delay} && cd ${var.ansible_workdir} && ansible-playbook -i ${var.ansible_inventory} -e ansible_ssh_common_args=\"${var.ansible_ssh}\" ${var.ansible_vars} ${var.ansible_vars2} ${var.ansible_playbooks} ${var.ansible_additional_playbooks}"
   }
 }
