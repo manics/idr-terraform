@@ -39,7 +39,7 @@ resource "openstack_compute_instance_v2" "omero" {
 
   metadata {
     # Ansible groups
-    groups = "${var.idr_environment}-omero-hosts,omero-hosts,${var.idr_environment}-hosts"
+    groups = "${var.idr_environment}-omero-hosts,omero-hosts,${var.idr_environment}-hosts,${var.idr_environment}-${var.idr_nfs_group}"
   }
 
 #  network {

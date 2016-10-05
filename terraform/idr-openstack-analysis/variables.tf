@@ -26,6 +26,11 @@ variable "omero_data_volume_source" {
   description = "UUID of the omero-data volume to be copied"
 }
 
+variable "idr_nfs_group" {
+  description = "IDR NFS ansible group (excluding idr_environment prefix)"
+  default = "disabled"
+}
+
 
 output "list_of_ips" {
   value = "${openstack_compute_instance_v2.database.access_ip_v4} ${openstack_compute_instance_v2.omero.access_ip_v4} ${openstack_compute_instance_v2.dockermanager.access_ip_v4}"
